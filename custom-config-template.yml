@@ -1,0 +1,19 @@
+# Copy this file into "/pga/custom-config.yml" once inside the container.
+
+# Provide the name of the operator to the agent for config retrieval.
+# Use the corresponding name of the PGA config given to the client cli.
+container_name: ""
+
+# Declare keys of properties to look for inside the database (props you require for calling your code).
+property_keys: []
+
+# State how to call your code, including potential parameters.
+# If you require properties, declare them using the related key used to retrieve it from DB: "... -param {PROP_KEY}"
+command: ""
+
+# Declare input ["file" || "value"] and output type ["file" || "console"].
+# If "file" is chosen, provide a file path to the corresponding file (not required for other types).
+input_type: "file"
+input_path: ""
+output_type: "file"
+output_path: ""
