@@ -3,51 +3,45 @@ import logging
 
 import pika
 
-from message_handler.message_handler import MessageHandler
 from agent.operator import call_operator
+from message_handler.message_handler import MessageHandler
+from population.individual import Individual, IndividualEncoder
+from utilities import utils
 
-QUEUE_NAME = "fitness"
 
+def receive_operator_callback(channel, method, properties, body):
+    logging.info(body)  # TODO: remove
+    ind_dict = json.loads(body)
+    individual = Individual(ind_dict["solution"], ind_dict["fitness"])
 
-def receive_fitness_evaluation_callback(channel, method, properties, body):
-    logging.debug(body)  # TODO: remove
-    pair = body.get("payload")
-    logging.info("rMQ:{queue_}: Received fitness evaluation request for pair: {pair_}".format(
-        queue_=QUEUE_NAME,
-        pair_=pair,
+    queue_name = utils.get_messaging_source()
+    logging.info("rMQ:{queue_}: Received agent operator request for individual: {ind_}".format(
+        queue_=queue_name,
+        ind_=individual,
     ))
 
     resulting_individual = call_operator(individual)
 
-    remaining_destinations = body.get("destinations")
     send_message_to_queue(
         channel=channel,
-        destinations=remaining_destinations,
-        payload=evaluated_pair
+        payload=resulting_individual
     )
 
 
-def send_message_to_queue(channel, destinations, payload):
-    # This will create the exchange if it doesn't already exist.
-    logging.debug(destinations)  # TODO: remove logs
-    next_recipient = destinations.pop(index=0)
-    logging.debug(destinations)
-
+def send_message_to_queue(channel, payload):
     # Route the message to the next queue in the model.
-    channel.exchange_declare(exchange="", routing_key=next_recipient, auto_delete=True, durable=True)
+    next_recipient = utils.get_messaging_target()
+    channel.queue_declare(queue=next_recipient, auto_delete=True, durable=True)
 
     # Send message to given recipient.
-    logging.info("rMQ: Sending '{body_}' to destinations {dest_}.".format(
+    logging.info("rMQ: Sending '{body_}' to {dest_}.".format(
         body_=payload,
-        dest_=destinations,
+        dest_=next_recipient,
     ))
     channel.basic_publish(
         exchange="",
         routing_key=next_recipient,
-        body=json.dumps({
-            "destinations": destinations,
-            "payload": payload
-        }),
+        body=json.dumps(payload, cls=IndividualEncoder),
         # Delivery mode 2 makes the broker save the message to disk.
         # This will ensure that the message be restored on reboot even
         # if RabbitMQ crashes before having forwarded the message.
@@ -70,16 +64,17 @@ class RabbitMessageQueue(MessageHandler):
         channel = self.connection.channel()
 
         # Create queue for fitness evaluation.
-        channel.queue_declare(queue=QUEUE_NAME, auto_delete=True, durable=True)
+        queue_name = utils.get_messaging_source()
+        channel.queue_declare(queue=queue_name, auto_delete=True, durable=True)
 
         # Actively listen for messages in queue and perform callback on receive.
         channel.basic_consume(
-            queue=QUEUE_NAME,
-            on_message_callback=receive_fitness_evaluation_callback,
+            queue=queue_name,
+            on_message_callback=receive_operator_callback,
             auto_ack=True
         )
         logging.info("rMQ:{queue_}: Waiting for fitness evaluation requests.".format(
-            queue_=QUEUE_NAME
+            queue_=queue_name
         ))
         channel.start_consuming()
 
@@ -87,11 +82,10 @@ class RabbitMessageQueue(MessageHandler):
         logging.info("rMQ: CLOSING CONNECTION")
         self.connection.close()
 
-    def send_message(self, pair, remaining_destinations):
+    def send_message(self, individual):
         # Define communication channel.
         channel = self.connection.channel()
         send_message_to_queue(
             channel=channel,
-            destinations=remaining_destinations,
-            payload=pair
+            payload=individual
         )

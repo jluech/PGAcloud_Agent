@@ -11,6 +11,6 @@ class MessageHandler(ABC):
         pass
 
     @abstractmethod
-    def send_message(self, payload, remaining_destinations):
+    def send_message(self, payload):
         # remaining_destinations is a list of strings with remaining recipients, in order of reception
         pass
