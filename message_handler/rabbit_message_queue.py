@@ -17,7 +17,7 @@ def receive_fitness_evaluation_callback(channel, method, properties, body):
         pair_=pair,
     ))
 
-    evaluated_pair = call_operator(pair.ind1, pair.ind2)
+    resulting_individual = call_operator(individual)
 
     remaining_destinations = body.get("destinations")
     send_message_to_queue(
