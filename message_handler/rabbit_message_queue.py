@@ -10,11 +10,10 @@ from utilities import utils
 
 
 def receive_operator_callback(channel, method, properties, body):
-    logging.info(body)  # TODO: remove
+    queue_name = utils.get_messaging_source()
+
     ind_dict = json.loads(body)
     individual = Individual(ind_dict["solution"], ind_dict["fitness"])
-
-    queue_name = utils.get_messaging_source()
     logging.info("rMQ:{queue_}: Received agent operator request for individual: {ind_}".format(
         queue_=queue_name,
         ind_=individual,
