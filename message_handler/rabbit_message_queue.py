@@ -70,7 +70,6 @@ class RabbitMessageQueue(MessageHandler):
         channel.basic_consume(
             queue=queue_name,
             on_message_callback=receive_operator_callback,
-            auto_ack=True
         )
         logging.info("rMQ:{queue_}: Waiting for fitness evaluation requests.".format(
             queue_=queue_name
