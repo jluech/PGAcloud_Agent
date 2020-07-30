@@ -82,23 +82,26 @@ def __retrieve_container_config():
     container_name = __CUSTOM_CONF.get("container_name")
 
     # Retrieve locally saved config file.
-    files = [f for f in os.listdir("/") if match(r'[0-9]+--{container_name}-config\.yml', f)]
+    files = [f for f in os.listdir("/") if match(r'[0-9]+--'+container_name+r'-config\.yml', f)]
     # https://stackoverflow.com/questions/2225564/get-a-filtered-list-of-files-in-a-directory/2225927#2225927
     # https://regex101.com/
 
     if not files.__len__() > 0:
         raise Exception("Error retrieving the container config: No matching config file found!")
     config = parse_yaml("/{}".format(files[0]))
-    __CONTAINER_CONF["pga_id"] = config.get("pga_id")
-    __CONTAINER_CONF["source"] = config.get("source")
-    __CONTAINER_CONF["target"] = config.get("target")
+    global __CONTAINER_CONF
+    __CONTAINER_CONF = {
+        "pga_id": config.get("pga_id"),
+        "source": config.get("source"),
+        "target": config.get("target")
+    }
     logging.info("Container config retrieved: {conf_}".format(conf_=__CONTAINER_CONF))
 
 
 # Commands regarding properties and configuration.
 def __retrieve_custom_config():
     global __CUSTOM_CONF
-    __CUSTOM_CONF = parse_yaml("/custom-config.yml")
+    __CUSTOM_CONF = parse_yaml("/pga/custom-config.yml")
     logging.info("Custom config retrieved: {conf_}".format(conf_=__CUSTOM_CONF))
 
 
