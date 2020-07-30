@@ -15,12 +15,19 @@ def call_operator(individual):
 
     # Call operator with provided command.
     command_str = utils.get_custom_setting("command")
+    logging.info("Retrieved command string: {cmdstr_}".format(cmdstr_=command_str))
+
+    fixed_command = ""
     marker_open = 0
-    marker_close = 0
-    for idx, char in command_str:
+    marker_close = -1
+    idx = 0
+    for char in command_str:
         if char == "{":
             marker_open = idx
         elif char == "}":
+            prev_marker = marker_close+1  # initially 0
+            fixed_command += command_str[prev_marker:marker_open]
+
             marker_close = idx
             key = command_str[marker_open+1:marker_close]
             value = utils.get_property(key)
@@ -28,15 +35,17 @@ def call_operator(individual):
                 param_string = ",".join(value)
             else:
                 param_string = str(value)
-            command_str[marker_open:marker_close+1] = param_string  # replace brackets and key with value
-    command = command_str
 
-    logging.info("Calling operator with: {cmd_}".format(cmd_=command))
+            fixed_command += param_string
+        idx += 1
+
+    logging.info("Calling operator with: {cmd_}".format(cmd_=fixed_command))
     utils.execute_command(
-        command=command,
+        command=fixed_command,
         working_directory=None,
         environment_variables=None,
         executor="AGENT",
+        livestream=True,
     )
 
     # Retrieve individual from file in output_path.
