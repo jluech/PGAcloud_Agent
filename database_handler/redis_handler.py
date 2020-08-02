@@ -15,5 +15,8 @@ class RedisHandler(DatabaseHandler):
                 value = str(value)
             self.redis.set(prop_key, value)
 
-    def retrieve(self, property_name):
+    def retrieve_item(self, property_name):
         return self.redis.get(property_name)
+
+    def retrieve_list(self, property_name):
+        return self.redis.lrange(property_name, 0, -1)
