@@ -19,18 +19,33 @@ def listen_for_operator_request():
     database_handler = get_database_handler(pga_id)
     relevant_properties = utils.get_custom_setting("property_keys")
     for prop in relevant_properties:
-        value = database_handler.retrieve(prop)
+        is_list = prop.get("is_list")
+        if is_list:
+            value = database_handler.retrieve_list(prop.get("key"))
+        else:
+            value = database_handler.retrieve_item(prop.get("key"))
         timer = 0
         start = time.perf_counter()
         while value is None and timer < 45:
+            if is_list:
+                value = database_handler.retrieve_list(prop.get("key"))
+            else:
+                value = database_handler.retrieve_item(prop.get("key"))
             time.sleep(1)
-            value = database_handler.retrieve(prop)
             timer = time.perf_counter() - start
         if timer >= 10:
-            raise Exception("Could not load property: {key_}".format(key_=prop))
+            raise Exception("Could not load property: {key_}".format(key_=prop.get("key")))
+
+        if is_list:
+            decoded = []
+            for val in value:
+                decoded.append(val.decode("utf-8"))
+            value = decoded
+        else:
+            value = value.decode("utf-8")
         utils.set_property(
-            property_key=prop,
-            property_value=value.decode("utf-8")
+            property_key=prop.get("key"),
+            property_value=value
         )
 
     message_handler = get_message_handler(pga_id)

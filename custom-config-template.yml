@@ -4,7 +4,10 @@
 # Use the corresponding name of the PGA config given to the client cli.
 container_name: ""
 
-# Declare keys of properties to look for inside the database (props you require for calling your code).
+# Declare keys of properties to look for inside the database (properties you require for calling your code).
+# Remove the brackets and list them like so (leave brackets for an empty list):
+# property_keys:
+# - {key: '<prop_key>', is_list: True|False}
 property_keys: []
 
 # State how to call your code, including potential parameters.
