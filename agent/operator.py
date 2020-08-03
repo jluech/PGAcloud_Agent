@@ -40,13 +40,14 @@ def call_operator(individual):
         idx += 1
 
     logging.info("Calling operator with: {cmd_}".format(cmd_=fixed_command))
-    utils.execute_command(
+    logs, error = utils.execute_command(
         command=fixed_command,
         working_directory=None,
         environment_variables=None,
         executor="AGENT",
         livestream=True,
     )
+    logging.info(logs)
 
     # Retrieve individual from file in output_path.
     # https://docs.python-guide.org/scenarios/serialization/#json-file-nested-data
