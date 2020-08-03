@@ -56,7 +56,7 @@ def call_operator(individual):
         ind_dict = json.load(f)
         resulting_individual = Individual(ind_dict["solution"], ind_dict["fitness"])
 
-    logging.info("Reading from output file: {}".format(resulting_individual))  # TODO: remove
+    logging.info("Reading from output file: {}".format(resulting_individual))
 
     # Delete the files that were created to ensure fresh start.
     os.remove(input_path)
