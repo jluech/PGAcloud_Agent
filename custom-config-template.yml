@@ -19,6 +19,7 @@ input_path: ""
 output_path: ""
 
 # State how to call your code, including potential parameters.
-# If you require additional properties, declare them using the related key used to retrieve it
-# from the DB: "... param={PROP_KEY}".
+# If you require additional properties, declare them using the related key used to retrieve it from the DB.
+# Contents of lists will be passed as a comma-separated string, without whitespaces between consecutive elements.
+# "... param={PROP_KEY}"
 command: ""
